@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>抒情音樂隨機播 - 副歌精華版</title>
+    <style>
+        :root {
+            --font-main: 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+            --bg-default: #fdfcfb;
+        }
+
+        body {
+            margin: 0; padding: 0;
+            display: flex; align-items: center; justify-content: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%);
+            font-family: var(--font-main);
+            transition: background 1.5s ease;
+        }
+
+        .container {
+            position: relative; z-index: 10; text-align: center;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 2rem; border-radius: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+            max-width: 600px; width: 90%;
+        }
+
+        .video-container {
+            position: relative; width: 100%; padding-bottom: 56.25%;
+            margin: 20px 0; border-radius: 15px; overflow: hidden;
+            background: #000;
+        }
+
+        #player { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+
+        .btn-next {
+            font-size: 20px; border: none; cursor: pointer;
+            padding: 15px 40px; border-radius: 50px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white; font-weight: bold; transition: 0.3s;
+            box-shadow: 0 10px 20px rgba(118, 75, 162, 0.3);
+        }
+
+        .btn-next:hover { transform: scale(1.05); }
+
+        #song-title { font-size: 1.4rem; font-weight: bold; color: #2d3436; margin-bottom: 5px; }
+        #chorus-tag { color: #6c5ce7; font-size: 0.9rem; font-weight: bold; margin-bottom: 15px; display: block; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div id="song-title">準備就緒</div>
+    <span id="chorus-tag">✨ 自動定位至副歌段落</span>
+    
+    <div class="video-container">
+        <div id="player"></div>
+    </div>
+
+    <button id="mainBtn" class="btn-next" onclick="playRandom()" disabled>🎵 隨機副歌播放</button>
+    <p style="font-size: 0.8rem; color: #636e72; margin-top: 15px;">提示：若無聲音，請點擊影片解鎖音量</p>
+</div>
+
+<script>
+    // 歌曲清單：加入 start 參數（秒數）
+    const playlist = [
+        { title: "周杰倫 - 晴天", id: "DYptgVvkVLQ", start: 83 }, 
+        { title: "周興哲 - 以後別做朋友", id: "Ew4VvF0DPMc", start: 81 },
+        { title: "田馥甄 - 小幸運", id: "GCgvpwLNvtY", start: 92 },
+        { title: "韋禮安 - 如果可以", id: "8MG--WuNW1Y", start: 73 },
+        { title: "G.E.M. 鄧紫棋 - 光年之外", id: "T4SimnaiktU", start: 61 },
+        { title: "A-Lin - 有一種悲傷", id: "BRcudpJzy1I", start: 78 },
+        { title: "林俊傑 - 修煉愛情", id: "LWV-f6dMN3Q", start: 106 },
+        { title: "李榮浩 - 年少有為", id: "Dnj5Tcpev0Q", start: 95 },
+        { title: "五月天 - 突然好想你", id: "GtDRcXtDg-4", start: 67 },
+        { title: "陳奕迅 - 十年", id: "JM9rx_hN1Ko", start: 78 },
+        { title: "梁靜茹 - 情歌", id: "7FiQV1-z06Q", start: 85 },
+        { title: "劉若英 - 後來", id: "t0igPuDjYUE", start: 75 }
+    ];
+
+    let player;
+    let isReady = false;
+
+    // 載入 YouTube API
+    const tag = document.createElement('script');
+    tag.src = "https://www.youtube.com/iframe_api";
+    document.head.appendChild(tag);
+
+    function onYouTubeIframeAPIReady() {
+        player = new YT.Player('player', {
+            videoId: playlist[0].id,
+            playerVars: {
+                'autoplay': 0,
+                'controls': 1,
+                'modestbranding': 1
+            },
+            events: {
+                'onReady': () => {
+                    isReady = true;
+                    document.getElementById('mainBtn').disabled = false;
+                }
+            }
+        });
+    }
+
+    function playRandom() {
+        if (!isReady) return;
+        
+        const song = playlist[Math.floor(Math.random() * playlist.length)];
+        document.getElementById('song-title').innerText = song.title;
+
+        // 隨機背景色
+        const h = Math.floor(Math.random() * 360);
+        document.body.style.background = `linear-gradient(135deg, hsl(${h}, 70%, 85%) 0%, hsl(${(h+40)%360}, 60%, 90%) 100%)`;
+
+        // 使用 seekTo 直接跳轉到副歌秒數
+        player.loadVideoById({
+            videoId: song.id,
+            startSeconds: song.start
+        });
+        player.playVideo();
+    }
+</script>
+</body>
+</html>
