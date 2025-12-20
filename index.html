@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>抒情影音隨機盒 - 幻彩版</title>
+    <title>抒情影音隨機盒 - 50首完整版</title>
     <style>
         :root {
             --text-color: #2d3436;
@@ -17,30 +17,69 @@
             align-items: center;
             justify-content: center;
             min-height: 100vh;
-            /* 初始背景 */
             background: linear-gradient(45deg, #a1c4fd, #c2e9fb, #fbc2eb, #a6c1ee);
             background-size: 400% 400%;
             font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+            overflow: hidden;
+            position: relative;
             transition: all 1s ease;
         }
 
-        /* 背景動畫：產生流動感 */
+        /* 背景流動動畫 */
         @keyframes gradientBG {
             0% { background-position: 0% 50%; }
             50% { background-position: 100% 50%; }
             100% { background-position: 0% 50%; }
         }
 
+        /* 裝飾層：五線譜與音符 */
+        .music-decoration {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .staff-line {
+            position: absolute;
+            width: 200%;
+            height: 1px;
+            background: rgba(0, 0, 0, 0.08);
+            animation: moveStaff 25s linear infinite;
+        }
+
+        @keyframes moveStaff {
+            from { transform: translateX(0); }
+            to { transform: translateX(-50%); }
+        }
+
+        .floating-note {
+            position: absolute;
+            color: rgba(0, 0, 0, 0.12);
+            font-size: 24px;
+            animation: flyNote 15s linear infinite;
+            user-select: none;
+        }
+
+        @keyframes flyNote {
+            0% { transform: translate(110vw, 0) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translate(-20vw, -100px) rotate(360deg); opacity: 0; }
+        }
+
         .container {
+            position: relative;
+            z-index: 10;
             text-align: center;
-            background: rgba(255, 255, 255, 0.85);
-            padding: 2rem;
-            border-radius: 30px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.1);
-            backdrop-filter: blur(15px);
-            max-width: 600px;
+            background: rgba(255, 255, 255, 0.88);
+            padding: 2.5rem;
+            border-radius: 40px;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.15);
+            backdrop-filter: blur(20px);
+            max-width: 650px;
             width: 100%;
-            border: 1px solid rgba(255, 255, 255, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.5);
         }
 
         .video-wrapper {
@@ -51,7 +90,7 @@
             border-radius: 20px;
             background: #000;
             margin-bottom: 25px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
         }
 
         .video-wrapper iframe {
@@ -67,43 +106,43 @@
         }
 
         .music-note-btn {
-            font-size: 35px;
+            font-size: 38px;
             border: none;
             cursor: pointer;
-            padding: 12px 30px;
-            border-radius: 50px;
+            padding: 15px 40px;
+            border-radius: 60px;
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             color: white;
-            box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
         }
 
-        /* 按鈕漸層 */
+        /* 指定的三種漸層 */
         .btn-blue-gray { background: linear-gradient(135deg, #708090, #2f4f4f); }
         .btn-purple-blue { background: linear-gradient(135deg, #a29bfe, #74b9ff); }
         .btn-yellow-blue { background: linear-gradient(135deg, #fff9c4, #81d4fa); color: #555; }
 
-        .music-note-btn:hover { transform: translateY(-5px) scale(1.05); filter: brightness(1.1); }
+        .music-note-btn:hover { transform: translateY(-8px) scale(1.08); filter: brightness(1.1); }
 
-        #song-title { font-size: 1.3rem; font-weight: bold; color: var(--song-title-color); margin-bottom: 10px; }
+        #song-title { font-size: 1.4rem; font-weight: bold; color: var(--song-title-color); margin-bottom: 12px; height: 1.5em; }
 
         #lyrics-display {
             background: rgba(255, 255, 255, 0.5);
-            border-radius: 15px;
+            border-radius: 20px;
             padding: 20px;
-            height: 130px;
+            height: 140px;
             overflow-y: auto;
             line-height: 1.8;
-            font-size: 1.05rem;
+            font-size: 1.1rem;
             color: #333;
             white-space: pre-line;
             border: 1px solid rgba(0,0,0,0.05);
         }
-
-        /* 隱藏滾動條 */
         #lyrics-display::-webkit-scrollbar { width: 0px; }
     </style>
 </head>
 <body>
+
+<div class="music-decoration" id="decoration-layer"></div>
 
 <div class="container">
     <div class="video-wrapper">
@@ -116,39 +155,64 @@
         <button class="music-note-btn btn-yellow-blue" onclick="playRandom()">🎵</button>
     </div>
 
-    <div id="song-title">點擊上方音符開啟隨機音樂之旅</div>
+    <div id="song-title">準備好聽音樂了嗎？</div>
     <div id="lyrics-display">
-        準備好心情，點選按鈕播放...
+        點擊音符按鈕，隨機播放 50 首經典抒情歌。
     </div>
 </div>
 
 <script>
     const playlist = [
-        { title: "周杰倫 - 晴天", id: "DYptgVvkVLQ", lyrics: "颳風這天 我試過握著妳手\n但偏偏 雨漸漸 大到我看妳不見\n還要多久 我才能在妳身邊\n等到放晴的那天 也許我會比較好一點" },
+        { title: "周杰倫 - 晴天", id: "DYptgVvk2AD", lyrics: "颳風這天 我試過握著妳手\n但偏偏 雨漸漸 大到我看妳不見\n還要多久 我才能在妳身邊\n等到放晴的那天 也許我會比較好一點" },
         { title: "周興哲 - 以後別做朋友", id: "Ew4VvF0D4iI", lyrics: "以後別做朋友 朋友不能牽手\n想愛你的衝動 我只能笑著帶過\n最好的朋友有些夢不能說出口\n就不用承擔會失去你的心痛" },
         { title: "田馥甄 - 小幸運", id: "_sQSXwdtNyY", lyrics: "原來你是我最想留住的幸運\n原來我們和愛情曾經靠得那麼近\n那為我對抗世界的決定\n那陪我淋的雨 一幕幕都是你 一塵不染的真心" },
         { title: "韋禮安 - 如果可以", id: "8MG--WuNw1Y", lyrics: "如果可以 我想和你回到那天相遇\n讓時間停止 那場雨能夠越下越清晰\n還有千萬分之一距離 雖然無法代替" },
-        { title: "G.E.M. 鄧紫棋 - 光年之外", id: "T4SimnaiktU", lyrics: "我沒想到 為了你 我能瘋狂到\n山崩地裂 靈魂已二十一克傻傻地燒\n緣分讓我們相遇亂世以外" },
+        { title: "G.E.M. 鄧紫棋 - 光年之外", id: "T4SimnaiktU", lyrics: "我沒想到 為了你 我能瘋狂到\n山崩地裂 靈魂已二十一克傻傻地燒\n緣分讓我們相遇亂世以外\n命運卻要我們危難中相愛" },
         { title: "A-Lin - 有一種悲傷", id: "BRcudpJzy1I", lyrics: "有一種悲傷 是你的名字停留在我的過往\n陪伴我呼吸 決定我微笑模樣\n無法遺忘" },
         { title: "林俊傑 - 修煉愛情", id: "LWV-f6dMN3Q", lyrics: "修煉愛情的心酸 學會放好以前的渴望\n我們那些信仰 多麼善良\n笑著說謊" },
         { title: "李榮浩 - 年少有為", id: "8In-ZGMLf_8", lyrics: "假如我年少有為不自卑 懂得什麼是珍貴\n那些美夢 沒給你 我一生有愧" },
         { title: "Ed Sheeran - Perfect", id: "2Vv-BfVoq4g", lyrics: "Baby, I'm dancing in the dark\nWith you between my arms\nBarefoot on the grass\nListening to our favorite song" },
         { title: "Adele - Someone Like You", id: "hLQl3WQQoQ0", lyrics: "Never mind, I'll find someone like you\nI wish nothing but the best for you, too\nDon't forget me, I beg, I remember you said" },
-        { title: "Christina Perri - A Thousand Years", id: "rtOvBOTyX00", lyrics: "I have loved you for a thousand years\nI'll love you for a thousand more" },
-        { title: "五月天 - 突然好想你", id: "RtGBy0jrbmI", lyrics: "突然好想你 你會在哪裡 過得快樂或委屈\n突然好想你 突然鋒利的回憶 突然模糊的眼睛" },
         { title: "莫文蔚 - 慢慢喜歡你", id: "M0w0p5FvR0E", lyrics: "慢慢喜歡你 慢慢的親密\n慢慢聊自己 慢慢和你走在一起" },
+        { title: "薛之謙 - 演員", id: "XAuZNg_clS8", lyrics: "該配合你演出的我演視而不見\n在逼一個最愛你的人即興表演" },
+        { title: "五月天 - 突然好想你", id: "RtGBy0jrbmI", lyrics: "突然好想你 你會在哪裡 過得快樂或委屈\n突然好想你 突然鋒利的回憶 突然模糊的眼睛" },
+        { title: "林宥嘉 - 說謊", id: "C68T8fOAsYI", lyrics: "我沒有說謊 我何必說謊\n你懂我的 我對你從來就不假" },
+        { title: "Calum Scott - You Are The Reason", id: "ShZ978fBl6y", lyrics: "I'd climb every mountain And swim every ocean\nJust to be with you And fix what I've broken" },
+        { title: "Coldplay - Fix You", id: "k4V3Mo61fJM", lyrics: "Lights will guide you home\nAnd ignite your bones\nAnd I will try to fix you" },
+        { title: "Maroon 5 - Memories", id: "SlPhMPnQ58k", lyrics: "Toast to the ones here today\nToast to the ones that we lost on the way" },
         { title: "張遠 - 嘉賓", id: "uV-eC6L-uYI", lyrics: "感謝你特別邀請 觀看你的大合照\n我的試探 都在你幸福的笑裡 變成了煎熬" },
-        { title: "茄子蛋 - 浪子回頭", id: "x3bDhtuC5yk", lyrics: "菸一支一支一支地點 酒一杯一杯一杯地開\n請你要體諒我 我也是沒辦法" }
-        // ... (此處可繼續增加至 50 首)
-    ];
-
-    // 背景色組合庫
-    const colorSchemes = [
-        ['#a1c4fd', '#c2e9fb', '#d4fc79', '#96e6a1'],
-        ['#fbc2eb', '#a6c1ee', '#fad0c4', '#ffd1ff'],
-        ['#84fab0', '#8fd3f4', '#f5f7fa', '#c3cfe2'],
-        ['#ffecd2', '#fcb69f', '#ff9a9e', '#fecfef'],
-        ['#a18cd1', '#fbc2eb', '#8fd3f4', '#84fab0']
+        { title: "陳奕迅 - 十年", id: "6S8uIn6Lp8U", lyrics: "十年之前 我不認識你 你不屬於我\n我們還是一樣 陪在一個陌生人左右" },
+        { title: "周杰倫 - 說好的幸福呢", id: "mLf99V2E_pQ", lyrics: "怎麼了 妳累了 說好的 幸福呢\n我懂了 不說了 愛淡了 夢遠了" },
+        { title: "周杰倫 - 擱淺", id: "YJfHuATJYsQ", lyrics: "我只能 永遠朝著遠方望去\n擱淺在 這一段回憶裡" },
+        { title: "Lady Gaga - Always Remember Us This Way", id: "5vHEwzyocnU", lyrics: "So when I'm all choked up and I can't find the words\nEvery time we say goodbye baby, it hurts" },
+        { title: "Lewis Capaldi - Someone You Loved", id: "zABLecsR5UE", lyrics: "I let my guard down And then you pulled the rug\nI was getting used to being someone you loved" },
+        { title: "Sam Smith - Stay With Me", id: "pB-5XG-DbAA", lyrics: "Oh, won't you stay with me?\n'Cause you're all I need" },
+        { title: "James Arthur - Say You Won't Let Go", id: "0yW7w8F2TVA", lyrics: "I wanna live with you Even when we're ghosts\n'Cause you were always there for me" },
+        { title: "Olivia Rodrigo - drivers license", id: "ZmDBbnmKqhQ", lyrics: "And I know we weren't perfect but I've never felt this way for no one" },
+        { title: "邱鋒澤 - 斷訊", id: "5o12oF3zMio", lyrics: "我們的愛斷了訊 找不到你的呼吸\n這城市太擁擠 卻只剩下我和回憶" },
+        { title: "郁可唯 - 路過人間", id: "0ir_Y_G2zE8", lyrics: "路過人間 也才幾十年\n卻以此 奢望 執迷 甚至 瘋癲" },
+        { title: "楊丞琳 - 年輪說", id: "8uA0oD378X8", lyrics: "一是嬰兒哭啼 二是學遊戲\n三是青春物語 四是剛好遇見你" },
+        { title: "Billie Eilish - lovely", id: "V1Pl8CzNzCw", lyrics: "Isn't it lovely, all alone?\nHeart made of glass, my mind of stone" },
+        { title: "Taylor Swift - All Too Well", id: "sell8G_VAZ8", lyrics: "And I know it's long gone and that magic's not here no more" },
+        { title: "Kodaline - All I Want", id: "mtf7hC17IBM", lyrics: "All I want is nothing more\nTo hear you knocking at my door" },
+        { title: "Ellie Goulding - Love Me Like You Do", id: "AJtDXIazrMo", lyrics: "Love me like you do, la-la-love me like you do" },
+        { title: "Lauv - I Like Me Better", id: "BcqxLCWn-CE", lyrics: "I like me better when I'm with you\nI knew from the first time" },
+        { title: "Justin Bieber - Love Yourself", id: "oyEuk8j8imI", lyrics: "My mama don't like you and she likes everyone" },
+        { title: "Hozier - Take Me To Church", id: "PVjiCPrdPA8", lyrics: "Take me to church\nI'll worship like a dog at the shrine of your lies" },
+        { title: "Birdy - Skinny Love", id: "aNzCDt2S_S8", lyrics: "And I told you to be patient\nAnd I told you to be fine" },
+        { title: "Shawn Mendes - In My Blood", id: "36tggrpRoKQ", lyrics: "Help me, it's like the walls are caving in\nSometimes I feel like giving up" },
+        { title: "白安 - 是什麼讓我遇見這樣的你", id: "78L597e7PjY", lyrics: "是什麼讓我遇見這樣的你\n是什麼讓我不再懷疑自己" },
+        { title: "張惠妹 - 聽海", id: "ZgI3bX9uD2k", lyrics: "聽海的聲音 嘆息著誰的愛情\n就讓它隨風飄散在空氣中" },
+        { title: "鄧紫棋 - 泡沫", id: "o0L9Yk-7W3Q", lyrics: "全都是泡沫 只一剎花火\n你所有承諾 全部都太脆弱" },
+        { title: "王心凌 - 當你", id: "E8G1xV_Y6A0", lyrics: "當你的眼睛瞇著笑 當你開口說你好\n我多想讓全世界知道 只對你感覺心跳" },
+        { title: "林俊傑 - 她說", id: "v_6yS0Y4Y5U", lyrics: "他靜靜聽著我們說完背景故事\n真希望這首歌 能讓你停止哭泣" },
+        { title: "周杰倫 - 楓", id: "mPjS_9_0f0o", lyrics: "緩緩飄落的楓葉像思念\n我點燃燭火溫暖歲末的秋天" },
+        { title: "Eric 周興哲 - 怎麼了", id: "Y2ge3KrdeWs", lyrics: "你說藍色是你最愛的顏色\n你說如果沒有愛那又如何" },
+        { title: "任然 - 飛鳥和蟬", id: "rfS0C7K6uNo", lyrics: "你說青澀最難忘 我有詩和遠方\n你說這算不算在那座避風港" },
+        { title: "Bruno Mars - Talking To The Moon", id: "fXw0jcYbqdo", lyrics: "At night when the stars light up my room\nI sit by myself talking to the moon" },
+        { title: "Benson Boone - Beautiful Things", id: "Oa_RSwwpPaA", lyrics: "Please stay, I want you, I need you, oh God\nDon't take these beautiful things that I've got" },
+        { title: "Sia - Chandelier", id: "2vjPBrBU-TM", lyrics: "I'm gonna swing from the chandelier\nI'm gonna live like tomorrow doesn't exist" },
+        { title: "John Legend - All of Me", id: "450p7goxZqg", lyrics: "Cause all of me loves all of you\nLove your curves and all your edges" }
     ];
 
     let player;
@@ -165,8 +229,6 @@
 
     function playRandom() {
         const song = playlist[Math.floor(Math.random() * playlist.length)];
-        
-        // 1. 更新影片與文字
         document.getElementById('song-title').innerText = song.title;
         document.getElementById('lyrics-display').innerText = song.lyrics;
 
@@ -175,12 +237,38 @@
             player.playVideo();
         }
 
-        // 2. 隨機變更背景漸層並啟動動畫
-        const scheme = colorSchemes[Math.floor(Math.random() * colorSchemes.length)];
-        document.body.style.background = `linear-gradient(-45deg, ${scheme[0]}, ${scheme[1]}, ${scheme[2]}, ${scheme[3]})`;
+        // 隨機背景顏色切換
+        const h = Math.floor(Math.random() * 360);
+        document.body.style.background = `linear-gradient(-45deg, hsl(${h}, 70%, 85%), hsl(${(h+40)%360}, 70%, 75%), hsl(${(h+180)%360}, 70%, 85%))`;
         document.body.style.backgroundSize = "400% 400%";
-        document.body.style.animation = "gradientBG 10s ease infinite";
+        document.body.style.animation = "gradientBG 8s ease infinite";
     }
+
+    // 初始化背景裝飾
+    function initDecoration() {
+        const layer = document.getElementById('decoration-layer');
+        // 畫五線譜
+        for(let i=0; i<10; i++){
+            const line = document.createElement('div');
+            line.className = 'staff-line';
+            line.style.top = (10 + i * 8) + '%';
+            line.style.animationDelay = (i * 0.5) + 's';
+            layer.appendChild(line);
+        }
+        // 噴灑隨機音符
+        const notes = ['♩','♪','♫','♬','♭','♮'];
+        for(let i=0; i<20; i++){
+            const n = document.createElement('div');
+            n.className = 'floating-note';
+            n.innerText = notes[Math.floor(Math.random()*notes.length)];
+            n.style.top = Math.random() * 100 + '%';
+            n.style.left = Math.random() * 100 + '%';
+            n.style.animationDelay = Math.random() * 15 + 's';
+            n.style.animationDuration = (10 + Math.random() * 10) + 's';
+            layer.appendChild(n);
+        }
+    }
+    initDecoration();
 </script>
 </body>
 </html>
