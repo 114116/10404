@@ -3,61 +3,121 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>抒情音樂自動連播 - 副歌精華版</title>
+    <title>抒情音樂樂譜版 - 自動連播副歌</title>
     <style>
+        /* --- 全局設定與變數 --- */
         :root {
             --font-main: 'PingFang TC', 'Microsoft JhengHei', sans-serif;
-            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --color-text-dark: #333;
+            --color-text-medium: #666;
+            --color-title: #2c3e50;
+            --bg-default: #a1c4fd; /* 初始背景色 */
         }
 
         body {
             margin: 0; padding: 0;
             display: flex; align-items: center; justify-content: center;
             min-height: 100vh;
-            background: #f0f2f5;
+            background: var(--bg-default);
+            background-size: 400% 400%; /* 為了背景漸變動畫 */
             font-family: var(--font-main);
-            transition: background 1.5s ease;
-            overflow: hidden;
+            overflow: hidden; /* 防止滾動條 */
+            position: relative;
+            transition: background 1.5s ease-out; /* 背景色平滑過渡 */
         }
 
+        /* --- 背景漸變動畫 --- */
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* --- 樂譜背景裝飾 --- */
+        .decoration-layer {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 1; overflow: hidden;
+            opacity: 0.6; /* 樂譜透明度 */
+        }
+
+        .staff-line {
+            position: absolute; width: 200%; height: 1.5px;
+            background: rgba(0, 0, 0, 0.08); /* 樂譜線顏色 */
+            animation: moveLine 25s linear infinite; /* 樂譜線移動動畫 */
+        }
+        @keyframes moveLine { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+        .floating-note {
+            position: absolute;
+            color: rgba(0, 0, 0, 0.12); /* 音符顏色 */
+            font-size: 28px;
+            animation: flyNote 15s linear infinite; /* 音符飄浮動畫 */
+            user-select: none;
+        }
+        @keyframes flyNote {
+            0% { transform: translate(110vw, 0) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translate(-20vw, -150px) rotate(360deg); opacity: 0; }
+        }
+
+        /* --- 主要內容區塊 --- */
         .container {
             position: relative; z-index: 10; text-align: center;
             background: rgba(255, 255, 255, 0.95);
             padding: 2.5rem; border-radius: 40px;
             box-shadow: 0 30px 60px rgba(0,0,0,0.12);
             max-width: 650px; width: 92%;
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(15px); /* 讓背景模糊穿透 */
         }
 
+        /* --- 影片播放器樣式 --- */
         .video-wrapper {
-            position: relative; width: 100%; padding-bottom: 56.25%;
+            position: relative; width: 100%; padding-bottom: 56.25%; /* 16:9 比例 */
             margin: 20px 0; border-radius: 20px; overflow: hidden;
-            background: #000; box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            background: #000; box-shadow: 0 10px 30px rgba(0,0,0,0.25);
         }
-
         #player { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
 
-        .btn-next {
-            font-size: 18px; border: none; cursor: pointer;
-            padding: 16px 45px; border-radius: 50px;
-            background: var(--primary-gradient);
-            color: white; font-weight: bold; transition: 0.3s;
-            box-shadow: 0 10px 20px rgba(118, 75, 162, 0.3);
-            margin-top: 10px;
+        /* --- 音符按鈕組 --- */
+        .button-group {
+            display: flex; justify-content: center; gap: 15px;
+            margin-top: 25px; margin-bottom: 15px;
         }
 
-        .btn-next:hover { transform: translateY(-3px) scale(1.03); opacity: 0.9; }
-        .btn-next:active { transform: translateY(0); }
-        .btn-next:disabled { background: #ccc; cursor: not-allowed; box-shadow: none; }
+        .music-note-btn {
+            font-size: 38px; border: none; cursor: pointer;
+            padding: 15px 40px; border-radius: 30px;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            color: white; /* 音符顏色 */
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+        }
 
-        #song-title { font-size: 1.6rem; font-weight: bold; color: #2c3e50; margin-bottom: 5px; }
-        #status-tag { 
+        /* 按鈕漸變色 */
+        .btn-blue-gray { background: linear-gradient(135deg, #708090, #2f4f4f); }
+        .btn-purple-blue { background: linear-gradient(135deg, #a29bfe, #74b9ff); }
+        .btn-yellow-blue { background: linear-gradient(135deg, #fff9c4, #81d4fa); color: var(--color-text-dark); }
+
+        /* 按鈕互動效果 */
+        .music-note-btn:hover { transform: translateY(-5px) scale(1.08); filter: brightness(1.1); }
+        .music-note-btn:active { transform: translateY(-2px) scale(1.03); }
+        .music-note-btn:disabled { opacity: 0.3; cursor: not-allowed; box-shadow: none; }
+
+        /* --- 文字顯示 --- */
+        #song-title { font-size: 1.6rem; font-weight: bold; color: var(--color-title); margin-bottom: 5px; }
+        #status-tag {
             display: inline-block; padding: 5px 15px; border-radius: 20px;
-            background: #eee; color: #666; font-size: 0.85rem; margin-bottom: 20px;
+            background: rgba(0, 0, 0, 0.05); color: #666; font-size: 0.85rem; margin-bottom: 20px;
         }
         .auto-mode { color: #6c5ce7; font-weight: bold; }
+        .mute-warning { color: #e74c3c; font-weight: bold; }
+        .tip-text { font-size: 0.8rem; color: #999; margin-top: 20px; }
     </style>
 </head>
 <body>
+
+<div class="decoration-layer" id="decoration-layer"></div>
 
 <div class="container">
     <div id="song-title">準備就緒</div>
@@ -67,8 +127,13 @@
         <div id="player"></div>
     </div>
 
-    <button id="mainBtn" class="btn-next" onclick="playRandom()" disabled>切換下一首隨機副歌</button>
-    <p style="font-size: 0.8rem; color: #999; margin-top: 20px;">※ 提示：若第一次播放無聲，請點擊影片畫面即可解鎖</p>
+    <div class="button-group">
+        <button id="btn1" class="music-note-btn btn-blue-gray" onclick="playRandom()" disabled>🎵</button>
+        <button id="btn2" class="music-note-btn btn-purple-blue" onclick="playRandom()" disabled>🎵</button>
+        <button id="btn3" class="music-note-btn btn-yellow-blue" onclick="playRandom()" disabled>🎵</button>
+    </div>
+
+    <p class="tip-text">※ 提示：若第一次播放無聲，請點擊影片畫面即可解鎖音量</p>
 </div>
 
 <script>
@@ -135,24 +200,30 @@
 
     function onYouTubeIframeAPIReady() {
         player = new YT.Player('player', {
-            videoId: playlist[0].id,
-            playerVars: { 'autoplay': 0, 'controls': 1, 'modestbranding': 1, 'rel': 0 },
+            videoId: playlist[0].id, // 初始顯示第一首歌
+            playerVars: {
+                'autoplay': 0,
+                'controls': 1, // 顯示控制條
+                'modestbranding': 1,
+                'rel': 0
+            },
             events: {
                 'onReady': onPlayerReady,
-                'onStateChange': onPlayerStateChange // 2. 監聽狀態改變
+                'onStateChange': onPlayerStateChange // 監聽狀態改變，實現自動連播
             }
         });
     }
 
     function onPlayerReady() {
         isReady = true;
-        document.getElementById('mainBtn').disabled = false;
+        // 啟用所有按鈕
+        document.querySelectorAll('.music-note-btn').forEach(btn => btn.disabled = false);
     }
 
-    // 3. 自動連播邏輯：當影片結束時 (YT.PlayerState.ENDED) 觸發
+    // 2. 自動連播邏輯：當影片結束時 (YT.PlayerState.ENDED) 觸發
     function onPlayerStateChange(event) {
         if (event.data === YT.PlayerState.ENDED) {
-            console.log("影片結束，正在跳轉下一首...");
+            console.log("影片結束，正在自動跳轉下一首...");
             playRandom();
         }
     }
@@ -163,17 +234,45 @@
         const song = playlist[Math.floor(Math.random() * playlist.length)];
         document.getElementById('song-title').innerText = song.title;
 
-        // 變換背景顏色
+        // 隨機變換背景顏色，並應用漸變動畫
         const h = Math.floor(Math.random() * 360);
-        document.body.style.background = `linear-gradient(135deg, hsl(${h}, 50%, 85%) 0%, hsl(${(h+40)%360}, 50%, 90%) 100%)`;
+        document.body.style.background = `linear-gradient(-45deg, hsl(${h}, 65%, 85%), hsl(${(h + 60) % 360}, 55%, 90%))`;
+        document.body.style.animation = "gradientBG 15s ease infinite";
 
-        // 載入並跳轉副歌
+
+        // 載入並跳轉到副歌時間點
         player.loadVideoById({
             videoId: song.id,
             startSeconds: song.start
         });
-        player.playVideo();
+        player.playVideo(); // 確保播放
     }
+
+    // 3. 樂譜背景裝飾初始化
+    document.addEventListener('DOMContentLoaded', () => {
+        const layer = document.getElementById('decoration-layer');
+        // 創建五線譜線
+        for(let i=0; i<8; i++) {
+            const line = document.createElement('div');
+            line.className = 'staff-line';
+            line.style.top = (10 + i * 10) + '%'; // 間隔 10%
+            line.style.animationDelay = (i * 0.5) + 's'; // 錯開動畫
+            layer.appendChild(line);
+        }
+        // 創建飄浮音符
+        const notes = ['♩','♪','♫','♬','♭','♮','𝄞'];
+        for(let i=0; i<20; i++) { // 更多音符飄浮
+            const n = document.createElement('div');
+            n.className = 'floating-note';
+            n.innerText = notes[Math.floor(Math.random() * notes.length)];
+            n.style.top = Math.random() * 90 + '%';
+            n.style.left = Math.random() * 100 + '%';
+            n.style.fontSize = (25 + Math.random() * 15) + 'px'; // 隨機大小
+            n.style.animationDuration = (12 + Math.random() * 8) + 's'; // 隨機速度
+            n.style.animationDelay = (Math.random() * 10) + 's'; // 隨機延遲
+            layer.appendChild(n);
+        }
+    });
 </script>
 </body>
 </html>
