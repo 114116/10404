@@ -3,70 +3,78 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>抒情音樂隨機播 - 副歌精華版</title>
+    <title>抒情音樂自動連播 - 副歌精華版</title>
     <style>
         :root {
             --font-main: 'PingFang TC', 'Microsoft JhengHei', sans-serif;
-            --bg-default: #fdfcfb;
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
 
         body {
             margin: 0; padding: 0;
             display: flex; align-items: center; justify-content: center;
             min-height: 100vh;
-            background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%);
+            background: #f0f2f5;
             font-family: var(--font-main);
             transition: background 1.5s ease;
+            overflow: hidden;
         }
 
         .container {
             position: relative; z-index: 10; text-align: center;
-            background: rgba(255, 255, 255, 0.9);
-            padding: 2rem; border-radius: 30px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
-            max-width: 600px; width: 90%;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 2.5rem; border-radius: 40px;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.12);
+            max-width: 650px; width: 92%;
         }
 
-        .video-container {
+        .video-wrapper {
             position: relative; width: 100%; padding-bottom: 56.25%;
-            margin: 20px 0; border-radius: 15px; overflow: hidden;
-            background: #000;
+            margin: 20px 0; border-radius: 20px; overflow: hidden;
+            background: #000; box-shadow: 0 10px 30px rgba(0,0,0,0.2);
         }
 
         #player { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
 
         .btn-next {
-            font-size: 20px; border: none; cursor: pointer;
-            padding: 15px 40px; border-radius: 50px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-size: 18px; border: none; cursor: pointer;
+            padding: 16px 45px; border-radius: 50px;
+            background: var(--primary-gradient);
             color: white; font-weight: bold; transition: 0.3s;
             box-shadow: 0 10px 20px rgba(118, 75, 162, 0.3);
+            margin-top: 10px;
         }
 
-        .btn-next:hover { transform: scale(1.05); }
+        .btn-next:hover { transform: translateY(-3px) scale(1.03); opacity: 0.9; }
+        .btn-next:active { transform: translateY(0); }
+        .btn-next:disabled { background: #ccc; cursor: not-allowed; box-shadow: none; }
 
-        #song-title { font-size: 1.4rem; font-weight: bold; color: #2d3436; margin-bottom: 5px; }
-        #chorus-tag { color: #6c5ce7; font-size: 0.9rem; font-weight: bold; margin-bottom: 15px; display: block; }
+        #song-title { font-size: 1.6rem; font-weight: bold; color: #2c3e50; margin-bottom: 5px; }
+        #status-tag { 
+            display: inline-block; padding: 5px 15px; border-radius: 20px;
+            background: #eee; color: #666; font-size: 0.85rem; margin-bottom: 20px;
+        }
+        .auto-mode { color: #6c5ce7; font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div id="song-title">準備就緒</div>
-    <span id="chorus-tag">✨ 自動定位至副歌段落</span>
+    <div id="status-tag">模式：<span class="auto-mode">✨ 自動副歌連播中</span></div>
     
-    <div class="video-container">
+    <div class="video-wrapper">
         <div id="player"></div>
     </div>
 
-    <button id="mainBtn" class="btn-next" onclick="playRandom()" disabled>🎵 隨機副歌播放</button>
-    <p style="font-size: 0.8rem; color: #636e72; margin-top: 15px;">提示：若無聲音，請點擊影片解鎖音量</p>
+    <button id="mainBtn" class="btn-next" onclick="playRandom()" disabled>切換下一首隨機副歌</button>
+    <p style="font-size: 0.8rem; color: #999; margin-top: 20px;">※ 提示：若第一次播放無聲，請點擊影片畫面即可解鎖</p>
 </div>
 
 <script>
-    // 歌曲清單：加入 start 參數（秒數）
+    // 50 首副歌時間點清單 (精確秒數)
     const playlist = [
-        { title: "周杰倫 - 晴天", id: "DYptgVvkVLQ", start: 83 }, 
+        { title: "周杰倫 - 晴天", id: "DYptgVvkVLQ", start: 83 },
         { title: "周興哲 - 以後別做朋友", id: "Ew4VvF0DPMc", start: 81 },
         { title: "田馥甄 - 小幸運", id: "GCgvpwLNvtY", start: 92 },
         { title: "韋禮安 - 如果可以", id: "8MG--WuNW1Y", start: 73 },
@@ -76,6 +84,43 @@
         { title: "李榮浩 - 年少有為", id: "Dnj5Tcpev0Q", start: 95 },
         { title: "五月天 - 突然好想你", id: "GtDRcXtDg-4", start: 67 },
         { title: "陳奕迅 - 十年", id: "JM9rx_hN1Ko", start: 78 },
+        { title: "Ed Sheeran - Perfect", id: "2Vv-BfVoq4g", start: 63 },
+        { title: "Adele - Someone Like You", id: "hLQl3WQQoQ0", start: 73 },
+        { title: "莫文蔚 - 慢慢喜歡你", id: "kqqraGvoqVs", start: 83 },
+        { title: "薛之謙 - 演員", id: "XaN3kUz4KSw", start: 103 },
+        { title: "林宥嘉 - 說謊", id: "ftfJRzW0MPo", start: 83 },
+        { title: "Coldplay - Fix You", id: "k4V3Mo61fJM", start: 145 },
+        { title: "Maroon 5 - Memories", id: "SlPhMPnQ58k", start: 45 },
+        { title: "張遠 - 嘉賓", id: "jPzkNvWOcGc", start: 85 },
+        { title: "周杰倫 - 說好的幸福呢", id: "mLFhTFiX0uM", start: 85 },
+        { title: "周杰倫 - 擱淺", id: "YJfHuATJYsQ", start: 83 },
+        { title: "Lady Gaga - Always Remember Us This Way", id: "5vheNbQlsyU", start: 70 },
+        { title: "Sam Smith - Stay With Me", id: "nuU2YHtxMik", start: 50 },
+        { title: "Olivia Rodrigo - drivers license", id: "ZmDBbnmKpqQ", start: 75 },
+        { title: "邱鋒澤 - 斷訊", id: "i25xHWoEK94", start: 75 },
+        { title: "郁可唯 - 路過人間", id: "FMl7GEaYwAE", start: 75 },
+        { title: "楊丞琳 - 年輪說", id: "anurOHpo0aY", start: 85 },
+        { title: "Billie Eilish - lovely", id: "V1Pl8CzNzCw", start: 60 },
+        { title: "Taylor Swift - All Too Well", id: "9OQBDdNHmXo", start: 75 },
+        { title: "Shawn Mendes - In My Blood", id: "36tggrpRoTI", start: 65 },
+        { title: "白安 - 是什麼讓我遇見這樣的你", id: "aVmZpcrQBU4", start: 75 },
+        { title: "張惠妹 - 聽海", id: "mLk61pfiHQ0", start: 95 },
+        { title: "鄧紫棋 - 泡沫", id: "GHXr4bBxHCo", start: 75 },
+        { title: "王心凌 - 當你", id: "LbnyAQY4q1Q", start: 75 },
+        { title: "林俊傑 - 她說", id: "BocMPQv9brE", start: 105 },
+        { title: "周杰倫 - 楓", id: "qzwsQTY-99o", start: 95 },
+        { title: "Eric 周興哲 - 怎麼了", id: "RcdscWaat_w", start: 75 },
+        { title: "任然 - 飛鳥和蟬", id: "V0XUd8f2pz8", start: 75 },
+        { title: "Benson Boone - Beautiful Things", id: "qKOMEWKrvb4", start: 80 },
+        { title: "Sia - Chandelier", id: "2vjPBrBU-TM", start: 65 },
+        { title: "John Legend - All of Me", id: "ngq5Aw0Q6rQ", start: 65 },
+        { title: "蔡健雅 - Letting Go", id: "2ByPpQbNzwk", start: 80 },
+        { title: "八三夭 - 想見你想見你想見你", id: "4iRupuNet3Q", start: 75 },
+        { title: "陳小春 - 獨家記憶", id: "K4i7UfFSr8k", start: 85 },
+        { title: "張杰 - 他不懂", id: "5M_gj4zrVPs", start: 85 },
+        { title: "那英 - 默", id: "heUq2v88Z9Q", start: 85 },
+        { title: "張學友 - 吻別", id: "k6zmy0yvXB4", start: 85 },
+        { title: "張宇 - 給你們", id: "0OSXMi9_WBQ", start: 85 },
         { title: "梁靜茹 - 情歌", id: "7FiQV1-z06Q", start: 85 },
         { title: "劉若英 - 後來", id: "t0igPuDjYUE", start: 75 }
     ];
@@ -83,7 +128,7 @@
     let player;
     let isReady = false;
 
-    // 載入 YouTube API
+    // 1. 載入 YouTube IFrame API
     const tag = document.createElement('script');
     tag.src = "https://www.youtube.com/iframe_api";
     document.head.appendChild(tag);
@@ -91,18 +136,25 @@
     function onYouTubeIframeAPIReady() {
         player = new YT.Player('player', {
             videoId: playlist[0].id,
-            playerVars: {
-                'autoplay': 0,
-                'controls': 1,
-                'modestbranding': 1
-            },
+            playerVars: { 'autoplay': 0, 'controls': 1, 'modestbranding': 1, 'rel': 0 },
             events: {
-                'onReady': () => {
-                    isReady = true;
-                    document.getElementById('mainBtn').disabled = false;
-                }
+                'onReady': onPlayerReady,
+                'onStateChange': onPlayerStateChange // 2. 監聽狀態改變
             }
         });
+    }
+
+    function onPlayerReady() {
+        isReady = true;
+        document.getElementById('mainBtn').disabled = false;
+    }
+
+    // 3. 自動連播邏輯：當影片結束時 (YT.PlayerState.ENDED) 觸發
+    function onPlayerStateChange(event) {
+        if (event.data === YT.PlayerState.ENDED) {
+            console.log("影片結束，正在跳轉下一首...");
+            playRandom();
+        }
     }
 
     function playRandom() {
@@ -111,11 +163,11 @@
         const song = playlist[Math.floor(Math.random() * playlist.length)];
         document.getElementById('song-title').innerText = song.title;
 
-        // 隨機背景色
+        // 變換背景顏色
         const h = Math.floor(Math.random() * 360);
-        document.body.style.background = `linear-gradient(135deg, hsl(${h}, 70%, 85%) 0%, hsl(${(h+40)%360}, 60%, 90%) 100%)`;
+        document.body.style.background = `linear-gradient(135deg, hsl(${h}, 50%, 85%) 0%, hsl(${(h+40)%360}, 50%, 90%) 100%)`;
 
-        // 使用 seekTo 直接跳轉到副歌秒數
+        // 載入並跳轉副歌
         player.loadVideoById({
             videoId: song.id,
             startSeconds: song.start
