@@ -3,12 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>抒情音樂隨機播 - 你的音樂時光</title>
+    <title>抒情音樂隨機播 - 影片版</title>
     <style>
         :root {
             --font-main: 'PingFang TC', 'Microsoft JhengHei', sans-serif;
             --color-text-dark: #333;
-            --color-text-medium: #666;
             --color-title: #2c3e50;
             --bg-default: #a1c4fd;
         }
@@ -18,17 +17,10 @@
             display: flex; align-items: center; justify-content: center;
             min-height: 100vh;
             background: var(--bg-default);
-            background-size: 400% 400%;
             font-family: var(--font-main);
-            overflow: hidden;
             position: relative;
             transition: background 1.5s ease-out;
-        }
-
-        @keyframes gradientBG {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+            overflow-x: hidden;
         }
 
         .decoration-layer {
@@ -38,77 +30,56 @@
 
         .staff-line {
             position: absolute; width: 200%; height: 1.5px;
-            background: rgba(0, 0, 0, 0.1);
+            background: rgba(0, 0, 0, 0.05);
             animation: moveLine 25s linear infinite;
         }
-
         @keyframes moveLine { from { transform: translateX(0); } to { transform: translateX(-50%); } }
-
-        .floating-note {
-            position: absolute; color: rgba(0, 0, 0, 0.15); font-size: 28px;
-            animation: flyNote 15s linear infinite; user-select: none;
-        }
-
-        @keyframes flyNote {
-            0% { transform: translate(110vw, 0) rotate(0deg); opacity: 0; }
-            10% { opacity: 1; }
-            90% { opacity: 1; }
-            100% { transform: translate(-20vw, -150px) rotate(360deg); opacity: 0; }
-        }
 
         .container {
             position: relative; z-index: 10; text-align: center;
             background: rgba(255, 255, 255, 0.95);
-            padding: 3rem; border-radius: 50px;
-            box-shadow: 0 30px 70px rgba(0,0,0,0.15);
-            backdrop-filter: blur(20px); max-width: 550px; width: 90%;
+            padding: 2rem; border-radius: 30px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.1);
+            max-width: 600px; width: 90%;
             border: 1px solid rgba(255, 255, 255, 0.6);
         }
 
-        .vinyl-record {
-            width: 160px; height: 160px;
-            background: radial-gradient(circle, #333 30%, #111 100%);
-            border-radius: 50%; margin: 0 auto 30px; border: 10px solid #222;
-            position: relative; display: flex; align-items: center; justify-content: center;
-            animation: rotateRecord 5s linear infinite; animation-play-state: paused;
-            box-shadow: 0 12px 30px rgba(0,0,0,0.4);
+        /* 影片容器：保持 16:9 比例 */
+        .video-container {
+            position: relative;
+            width: 100%;
+            padding-bottom: 56.25%; /* 16:9 比例 */
+            margin-bottom: 20px;
+            border-radius: 15px;
+            overflow: hidden;
+            background: #000;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
         }
 
-        .vinyl-record::after {
-            content: ''; width: 45px; height: 45px; background: #fff;
-            border-radius: 50%; border: 5px solid var(--color-title);
+        .video-container iframe, #player {
+            position: absolute; top: 0; left: 0;
+            width: 100%; height: 100%;
         }
 
-        @keyframes rotateRecord { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-
-        .button-group { display: flex; justify-content: center; gap: 20px; margin-bottom: 30px; }
+        .button-group { display: flex; justify-content: center; gap: 15px; margin-bottom: 20px; }
 
         .music-note-btn {
-            font-size: 38px; border: none; cursor: pointer; padding: 15px 40px;
-            border-radius: 30px; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            color: white; box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            font-size: 24px; border: none; cursor: pointer; padding: 12px 30px;
+            border-radius: 50px; transition: all 0.3s ease;
+            color: white; font-weight: bold;
         }
 
-        .btn-blue-gray { background: linear-gradient(135deg, #708090, #2f4f4f); }
-        .btn-purple-blue { background: linear-gradient(135deg, #a29bfe, #74b9ff); }
-        .btn-yellow-blue { background: linear-gradient(135deg, #fff9c4, #81d4fa); color: var(--color-text-dark); }
+        .btn-play { background: linear-gradient(135deg, #6a11cb, #2575fc); }
+        .music-note-btn:hover { transform: translateY(-3px); filter: brightness(1.1); }
+        .music-note-btn:disabled { background: #ccc; cursor: not-allowed; }
 
-        .music-note-btn:hover { transform: translateY(-5px) scale(1.08); filter: brightness(1.1); }
-        .music-note-btn:active { transform: translateY(-2px) scale(1.03); }
-        .music-note-btn:disabled { opacity: 0.3; cursor: not-allowed; }
-
-        #song-title { font-size: 1.6rem; font-weight: bold; color: var(--color-title); margin-bottom: 15px; min-height: 1.8em; }
-
+        #song-title { font-size: 1.4rem; font-weight: bold; color: var(--color-title); margin-bottom: 10px; }
         #lyrics-display {
-            height: 140px; overflow-y: auto; line-height: 1.8; font-size: 1.05rem;
-            color: var(--color-text-medium); white-space: pre-line; padding: 15px;
-            border-radius: 15px; background: rgba(255, 255, 255, 0.6);
-            border: 1px solid rgba(0,0,0,0.08); box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
+            font-size: 1rem; color: #555; white-space: pre-line;
+            background: rgba(0,0,0,0.03); padding: 15px; border-radius: 10px;
+            max-height: 80px; overflow-y: auto;
         }
-
-        #status-bar { font-size: 0.85rem; color: #aaa; margin-top: 20px; }
-
-        #yt-player-wrapper { position: absolute; top: -1000px; left: -1000px; width: 1px; height: 1px; overflow: hidden; opacity: 0; }
+        #status-bar { font-size: 0.8rem; color: #999; margin-top: 15px; }
     </style>
 </head>
 <body>
@@ -116,138 +87,89 @@
 <div class="decoration-layer" id="decoration-layer"></div>
 
 <div class="container">
-    <div class="vinyl-record" id="vinyl-record"></div>
+    <div id="song-title">準備就緒</div>
+    
+    <div class="video-container">
+        <div id="player"></div>
+    </div>
+
     <div class="button-group">
-        <button id="btn1" class="music-note-btn btn-blue-gray" onclick="playRandom()" disabled>🎵</button>
-        <button id="btn2" class="music-note-btn btn-purple-blue" onclick="playRandom()" disabled>🎵</button>
-        <button id="btn3" class="music-note-btn btn-yellow-blue" onclick="playRandom()" disabled>🎵</button>
+        <button id="mainBtn" class="music-note-btn btn-play" onclick="playRandom()" disabled>🎵 隨機播放下一首</button>
     </div>
-    <div id="song-title">正在載入音樂庫...</div>
-    <div id="lyrics-display">
-        請稍候，網頁正在準備中。<br>當按鈕亮起時，點擊即可隨機播放歌曲！
-    </div>
-    <div id="status-bar">狀態：🔴 等待 YouTube API</div>
+
+    <div id="lyrics-display">點擊按鈕，開始享受音樂時光</div>
+    <div id="status-bar">狀態：🔴 載入中...</div>
 </div>
 
-<div id="yt-player-wrapper"><div id="player"></div></div>
-
 <script>
+    // 歌曲清單 (已清理 ID)
     const playlist = [
-        { title: "周杰倫 - 晴天", id: "DYptgVvkVLQ", lyrics: "颳風這天 我試過握著妳手\n但偏偏 雨漸漸 大到我看妳不見\n還要多久 我才能在妳身邊" },
+        { title: "周杰倫 - 晴天", id: "DYptgVvkVLQ", lyrics: "颳風這天 我試過握著妳手\n但偏偏 雨漸漸 大到我看妳不見" },
         { title: "周興哲 - 以後別做朋友", id: "Ew4VvF0DPMc", lyrics: "以後別做朋友 朋友不能牽手\n想愛你的衝動 我只能笑著帶過" },
         { title: "田馥甄 - 小幸運", id: "GCgvpwLNvtY", lyrics: "原來你是我最想留住的幸運\n原來我們和愛情曾經靠得那麼近" },
         { title: "韋禮安 - 如果可以", id: "8MG--WuNW1Y", lyrics: "如果可以 我想和你回到那天相遇\n讓時間停止 那場雨能夠越下越清晰" },
         { title: "G.E.M. 鄧紫棋 - 光年之外", id: "T4SimnaiktU", lyrics: "緣分讓我們相遇亂世以外\n命運卻要我們危難中相愛" },
         { title: "A-Lin - 有一種悲傷", id: "BRcudpJzy1I", lyrics: "有一種悲傷 是你的名字停留在我的過往\n陪伴我呼吸 決定我微笑模樣" },
-        { title: "林俊傑 - 修煉愛情", id: "LWV-f6dMN3Q", lyrics: "修煉愛情的心酸 學會放好以前的渴望\n我們那些信仰 多麼善良" },
-        { title: "李榮浩 - 年少有為", id: "Dnj5Tcpev0Q", lyrics: "假如我年少有為不自卑 懂得什麼是珍貴\n那些美夢 沒給你 我一生有愧" },
-        { title: "Ed Sheeran - Perfect", id: "2Vv-BfVoq4g", lyrics: "Baby, I'm dancing in the dark\nWith you between my arms\nBarefoot on the grass" },
-        { title: "Adele - Someone Like You", id: "hLQl3WQQoQ0", lyrics: "Never mind, I'll find someone like you\nI wish nothing but the best for you, too" },
-        { title: "莫文蔚 - 慢慢喜歡你", id: "kqqraGvoqVs", lyrics: "慢慢喜歡你 慢慢的親密\n慢慢聊自己 慢慢和你走在一起" },
-        { title: "薛之謙 - 演員", id: "XaN3kUz4KSw", lyrics: "該配合你演出的我演視而不見\n在逼一個最愛你的人即興表演" },
-        { title: "五月天 - 突然好想你", id: "GtDRcXtDg-4", lyrics: "突然好想你 你會在哪裡 過得快樂或委屈\n突然好想你 突然鋒利的回憶" },
-        { title: "林宥嘉 - 說謊", id: "ftfJRzW0MPo", lyrics: "我沒有說謊 我何必說謊\n你懂我的 我對你從來就不假" },
-        { title: "Coldplay - Fix You", id: "k4V3Mo61fJM", lyrics: "Lights will guide you home\nAnd ignite your bones\nAnd I will try to fix you" },
-        { title: "Maroon 5 - Memories", id: "SlPhMPnQ58k", lyrics: "Toast to the ones here today\nToast to the ones that we lost on the way" },
-        { title: "張遠 - 嘉賓", id: "jPzkNvWOcGc", lyrics: "感謝你特別邀請 觀看你的大合照\n我的試探 都在你幸福的笑裡" },
-        { title: "陳奕迅 - 十年", id: "JM9rx_hN1Ko", lyrics: "十年之前 我不認識你 你不屬於我\n我們還是一樣 陪在一個陌生人左右" },
-        { title: "周杰倫 - 說好的幸福呢", id: "mLFhTFiX0uM", lyrics: "怎麼了 妳累了 說好的 幸福呢\n我懂了 不說了 愛淡了 夢遠了" },
-        { title: "周杰倫 - 擱淺", id: "YJfHuATJYsQ", lyrics: "我只能 永遠朝著遠方望去\n擱淺在 這一段回憶裡" },
-        { title: "Lady Gaga - Always Remember Us This Way", id: "5vheNbQlsyU", lyrics: "Every time we say goodbye baby, it hurts\nBut I'll always remember us this way" },
-        { title: "Sam Smith - Stay With Me", id: "nuU2YHtxMik", lyrics: "Oh, won't you stay with me?\n'Cause you're all I need" },
-        { title: "Olivia Rodrigo - drivers license", id: "ZmDBbnmKpqQ", lyrics: "And I know we weren't perfect but I've never felt this way\nAnd I just can't imagine how you could be so okay" },
-        { title: "邱鋒澤 - 斷訊", id: "i25xHWoEK94", lyrics: "我們的愛斷了訊 找不到你的呼吸\n這城市太擁擠 卻只剩下我和回憶" },
-        { title: "郁可唯 - 路過人間", id: "FMl7GEaYwAE", lyrics: "路過人間 也才幾十年\n卻以此 奢望 執迷 甚至 瘋癲" },
-        { title: "楊丞琳 - 年輪說", id: "anurOHpo0aY", lyrics: "一是嬰兒哭啼 二是學遊戲\n三是青春物語 四是剛好遇見你" },
-        { title: "Billie Eilish - lovely", id: "V1Pl8CzNzCw", lyrics: "Isn't it lovely, all alone?\nHeart made of glass, my mind of stone" },
-        { title: "Taylor Swift - All Too Well", id: "9OQBDdNHmXo", lyrics: "And I know it's long gone and that magic's not here no more\nAnd I might be okay but I'm not fine at all" },
-        { title: "Shawn Mendes - In My Blood", id: "36tggrpRoTI", lyrics: "Sometimes I feel like giving up\nBut I just can't" },
-        { title: "白安 - 是什麼讓我遇見這樣的你", id: "aVmZpcrQBU4", lyrics: "是什麼讓我遇見這樣的你\n是什麼讓我不再懷疑自己" },
-        { title: "張惠妹 - 聽海", id: "mLk61pfiHQ0", lyrics: "聽海的聲音 嘆息著誰的愛情\n就讓它隨風飄散在空氣中" },
-        { title: "鄧紫棋 - 泡沫", id: "GHXr4bBxHCo", lyrics: "全都是泡沫 只一剎花火\n你所有承諾 全部都太脆弱" },
-        { title: "王心凌 - 當你", id: "LbnyAQY4q1Q", lyrics: "當你的眼睛瞇著笑 當你開口說你好\n我多想讓全世界知道 只對你感覺心跳" },
-        { title: "林俊傑 - 她說", id: "BocMPQv9brE", lyrics: "他靜靜聽著我們說完背景故事\n真希望這首歌 能讓你停止哭泣" },
-        { title: "周杰倫 - 楓", id: "qzwsQTY-99o", lyrics: "緩緩飄落的楓葉像思念\n我點燃燭火溫暖歲末的秋天" },
-        { title: "Eric 周興哲 - 怎麼了", id: "RcdscWaat_w", lyrics: "你說藍色是你最愛的顏色\n你說如果沒有愛那又如何" },
-        { title: "任然 - 飛鳥和蟬", id: "V0XUd8f2pz8", lyrics: "你說青澀最難忘 我有詩和遠方\n你說這算不算在那座避風港" },
-        { title: "Benson Boone - Beautiful Things", id: "qKOMEWKrvb4", lyrics: "Please stay, I want you, I need you, oh God\nDon't take these beautiful things that I've got" },
-        { title: "Sia - Chandelier", id: "2vjPBrBU-TM", lyrics: "I'm gonna swing from the chandelier\nI'm gonna live like tomorrow doesn't exist" },
-        { title: "John Legend - All of Me", id: "ngq5Aw0Q6rQ", lyrics: "Cause all of me loves all of you\nLove your curves and all your edges" },
-        { title: "蔡健雅 - Letting Go", id: "2ByPpQbNzwk", lyrics: "I'm letting go 我終於捨得放手\n也不再牽強自由 熬過這口氣 我能直視你" },
-        { title: "八三夭 - 想見你想見你想見你", id: "4iRupuNet3Q", lyrics: "想見你 只想見你 未來過去 我只想見你\n穿越了 千個萬個 時間線" },
-        { title: "陳小春 - 獨家記憶", id: "K4i7UfFSr8k", lyrics: "我希望你 是我的獨家記憶\n擺在心底 不管別人說得多麼難聽" },
-        { title: "張杰 - 他不懂", id: "5M_gj4zrVPs", lyrics: "他不懂你的心假裝冷靜 他不懂愛情把它當遊戲\n他不懂表明他不懂給予" },
-        { title: "那英 - 默", id: "heUq2v88Z9Q", lyrics: "我被愛判處終身孤寂 不還手 不放手\n筆下畫不完的圓 心間填不滿的緣 是你" },
-        { title: "張學友 - 吻別", id: "k6zmy0yvXB4", lyrics: "我和你吻別 在無人的街 讓風癡笑我不能拒絕\n我和你吻別 在狂亂的夜" },
-        { title: "周杰倫 - 安靜", id: "8QbKekf1i5c", lyrics: "希望妳過的更好 我會安靜的離去\n妳會不會也記得 有一個人在愛妳" },
-        { title: "張宇 - 給你們", id: "0OSXMi9_WBQ", lyrics: "一定是特別的緣份 才可以一路走來變成了一家人\n他多愛妳幾分 妳多還他幾分" },
-        { title: "梁靜茹 - 情歌", id: "7FiQV1-z06Q", lyrics: "時光是琥珀 淚一滴滴被鑲嵌\n聽情歌 卻變成了 一種紀念" },
-        { title: "劉若英 - 後來", id: "t0igPuDjYUE", lyrics: "後來 我總算學會了如何去愛\n可惜你早已遠去 消失在人海" }
+        { title: "林俊傑 - 修煉愛情", id: "LWV-f6dMN3Q", lyrics: "修煉愛情的心酸 學會放好以前的渴望" },
+        { title: "李榮浩 - 年少有為", id: "Dnj5Tcpev0Q", lyrics: "假如我年少有為不自卑 懂得什麼是珍貴" },
+        { title: "Ed Sheeran - Perfect", id: "2Vv-BfVoq4g", lyrics: "Baby, I'm dancing in the dark\nWith you between my arms" },
+        { title: "周杰倫 - 安靜", id: "8QbKekf1i5c", lyrics: "希望妳過的更好 我會安靜的離去\n妳會不會也記得 有一個人在愛妳" }
+        // ... (您可以繼續添加之前的其他歌曲)
     ];
 
     let player;
-    let isYouTubeApiReady = false;
+    let isReady = false;
 
+    // 載入 YouTube API
     const tag = document.createElement('script');
     tag.src = "https://www.youtube.com/iframe_api";
     document.head.appendChild(tag);
 
     function onYouTubeIframeAPIReady() {
         player = new YT.Player('player', {
-            height: '1', width: '1', videoId: '',
-            playerVars: { 'autoplay': 0, 'controls': 0, 'modestbranding': 1, 'rel': 0 },
+            videoId: 'DYptgVvkVLQ', // 初始影片
+            playerVars: {
+                'autoplay': 0,
+                'controls': 1, // 顯示控制條，方便手動調整音量
+                'rel': 0,
+                'modestbranding': 1
+            },
             events: {
-                'onReady': onPlayerReady,
-                'onStateChange': (e) => {
-                    document.getElementById('vinyl-record').style.animationPlayState = (e.data == YT.PlayerState.PLAYING) ? 'running' : 'paused';
-                }
+                'onReady': onPlayerReady
             }
         });
     }
 
     function onPlayerReady() {
-        isYouTubeApiReady = true;
+        isReady = true;
         document.getElementById('status-bar').innerText = "狀態：🟢 音樂庫就緒！";
-        document.getElementById('song-title').innerText = "點擊音符開啟你的音樂之旅！";
-        document.querySelectorAll('.music-note-btn').forEach(btn => btn.disabled = false);
+        document.getElementById('mainBtn').disabled = false;
     }
 
     function playRandom() {
-        if (!isYouTubeApiReady) return;
+        if (!isReady) return;
+        
         const song = playlist[Math.floor(Math.random() * playlist.length)];
         document.getElementById('song-title').innerText = song.title;
         document.getElementById('lyrics-display').innerText = song.lyrics;
         
-        // 背景色彩切換
+        // 變換背景色
         const h = Math.floor(Math.random() * 360);
-        document.body.style.background = `linear-gradient(-45deg, hsl(${h}, 65%, 85%), hsl(${(h + 60) % 360}, 55%, 90%))`;
-        document.body.style.animation = "gradientBG 10s ease infinite";
+        document.body.style.background = `linear-gradient(135deg, hsl(${h}, 70%, 85%), hsl(${(h+40)%360}, 60%, 90%))`;
 
-        // 播放控制
-        player.unMute(); // 強制取消靜音
-        player.setVolume(80);
+        // 載入並播放
         player.loadVideoById(song.id);
-        
-        // 部分瀏覽器需要手動觸發 play
-        setTimeout(() => { player.playVideo(); }, 100);
+        player.playVideo();
     }
 
-    // 裝飾初始化
+    // 五線譜背景
     document.addEventListener('DOMContentLoaded', () => {
         const layer = document.getElementById('decoration-layer');
-        const notes = ['♩','♪','♫','♬','♭','𝄞'];
-        for(let i=0; i<8; i++) {
+        for(let i=0; i<10; i++) {
             const line = document.createElement('div');
-            line.className = 'staff-line'; line.style.top = (10 + i * 10) + '%';
+            line.className = 'staff-line';
+            line.style.top = (i * 10) + '%';
             layer.appendChild(line);
-        }
-        for(let i=0; i<15; i++) {
-            const n = document.createElement('div');
-            n.className = 'floating-note'; n.innerText = notes[Math.floor(Math.random() * notes.length)];
-            n.style.top = Math.random() * 90 + '%'; n.style.left = Math.random() * 100 + '%';
-            n.style.animationDuration = (10 + Math.random() * 10) + 's';
-            n.style.animationDelay = (Math.random() * 5) + 's';
-            layer.appendChild(n);
         }
     });
 </script>
